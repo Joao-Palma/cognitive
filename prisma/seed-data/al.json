@@ -1,0 +1,136 @@
+{
+  "fenixId": "1127510519587562",
+  "acronym": "AL",
+  "name": "Álgebra Linear",
+  "ects": 6,
+  "semester": 1,
+  "programRaw": "Métodos de eliminação de Gauss e Gauss-Jordan. Aplicação à solução de sistemas lineares. Matrizes. Matrizes inversas. Determinantes. Definição e exemplos de espaços vetoriais. Conjuntos linearmente independentes. Transformações Lineares. Núcleo e imagem de uma transformação linear. Espaço de soluções de uma equação linear. Valores e vetores próprios. Multiplicidade algébrica e geométrica. Forma canónica de Jordan. Exemplos de aplicações (e.g. sistemas de equações diferenciais ordinárias lineares com coeficientes constantes, estabilidade de sistemas dinâmicos lineares, cadeias de Markov, algoritmo de PageRank). Definição de produto interno. Ortogonalização de Gram-Schmidt. Método dos quadrados mínimos. Teorema espetral. Transformações ortogonais, unitárias, hermitianas. Decomposição em valores singulares de uma transformação entre espaços euclidianos. Classificação das formas quadráticas reais. ",
+  "topics": [
+    {
+      "order": 1,
+      "title": "Métodos de eliminação de Gauss e Gauss-Jordan",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 2,
+      "title": "Aplicação à solução de sistemas lineares",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 3,
+      "title": "Matrizes",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 4,
+      "title": "Matrizes inversas",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 5,
+      "title": "Determinantes",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 6,
+      "title": "Definição e exemplos de espaços vetoriais",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 7,
+      "title": "Conjuntos linearmente independentes",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 8,
+      "title": "Transformações Lineares",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 9,
+      "title": "Núcleo e imagem de uma transformação linear",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 10,
+      "title": "Espaço de soluções de uma equação linear",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 11,
+      "title": "Valores e vetores próprios",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 12,
+      "title": "Multiplicidade algébrica e geométrica",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 13,
+      "title": "Forma canónica de Jordan",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 14,
+      "title": "Exemplos de aplicações (e.g. sistemas de equações diferenciais ordinárias lineares com coeficientes constantes, estabilidade de sistemas dinâmicos lineares,…",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 15,
+      "title": "Definição de produto interno",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 16,
+      "title": "Ortogonalização de Gram-Schmidt",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 17,
+      "title": "Método dos quadrados mínimos",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 18,
+      "title": "Teorema espetral",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 19,
+      "title": "Transformações ortogonais, unitárias, hermitianas",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 20,
+      "title": "Decomposição em valores singulares de uma transformação entre espaços euclidianos",
+      "weight": 1,
+      "difficulty": 2
+    },
+    {
+      "order": 21,
+      "title": "Classificação das formas quadráticas reais",
+      "weight": 1,
+      "difficulty": 2
+    }
+  ]
+}

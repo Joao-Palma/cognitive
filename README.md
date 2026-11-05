@@ -9,8 +9,8 @@ estudar em cada dia**. Vários testes na mesma semana são conciliados num únic
 ```bash
 npm install
 cp .env.example .env
-npx prisma migrate dev     # cria a BD SQLite
-npm run scrape             # importa cadeiras e tópicos da LEIC-A/T (API pública do Fénix)
+npm run db:setup           # cria a BD SQLite e insere Álgebra Linear (tópicos + guias), sem rede
+npm run scrape             # opcional: importa as restantes cadeiras da LEIC-A/T (API do Fénix)
 npm run dev                # http://localhost:3100
 ```
 
@@ -21,6 +21,8 @@ Para entrar, basta o email em `/login`, sem verificação. Fica ativo em dev, e 
 | Comando | O quê |
 |---|---|
 | `npm test` | Testes do núcleo (planner, recorrências, disponibilidade, scheduler, parser) |
+| `npm run db:setup` | Aplica as migrações e corre o seed (Álgebra Linear) |
+| `npm run db:seed` | Só o seed. Também corre sozinho em `prisma migrate dev` (BD nova) e `prisma migrate reset` |
 | `npm run scrape` | Importa/atualiza cadeiras do Fénix (`-- --fresh` ignora a cache) |
 | `npm run db:studio` | Inspecionar a BD |
 
@@ -45,7 +47,14 @@ Para **Álgebra Linear** há 21 guias, um por tópico do programa. Estão em `sr
 
 O código está em `src/guides/widgets/`. A aritmética exata (frações) e a álgebra 2×2 estão em `src/guides/math/` e têm testes. A notação segue a usada no IST e nos [resumos da LEIC](https://resumos.leic.pt); o texto e os exemplos são originais.
 
-Para acrescentar uma cadeira: escreve os componentes em `src/guides/<sigla>/`, regista-os em `src/guides/GuideRenderer.tsx` e adiciona as ordens dos tópicos a `src/guides/index.ts`.
+Para acrescentar uma cadeira:
+
+1. Escreve os componentes em `src/guides/<sigla>/`.
+2. Regista-os em `src/guides/GuideRenderer.tsx`.
+3. Adiciona as ordens dos tópicos a `src/guides/index.ts`.
+4. Põe a cadeira e os tópicos em `prisma/seed-data/<sigla>.json`, para entrarem no seed.
+
+O seed falha se houver um guia para um tópico que não exista.
 
 ## Premium
 
