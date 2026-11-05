@@ -11,7 +11,7 @@ npm install
 cp .env.example .env
 npx prisma migrate dev     # cria a BD SQLite
 npm run scrape             # importa cadeiras e tópicos da LEIC-A/T (API pública do Fénix)
-npm run dev
+npm run dev                # http://localhost:3100
 ```
 
 Em desenvolvimento há um login "Dev (só email)" em `/api/auth/signin`.
