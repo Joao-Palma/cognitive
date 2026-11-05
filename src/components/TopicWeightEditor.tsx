@@ -1,20 +1,22 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/i18n/client";
 
 export function TopicWeightEditor({ id, weight, difficulty }: { id: string; weight: number; difficulty: number }) {
   const router = useRouter();
+  const t = useT();
   const [w, setW] = useState(weight);
   const [d, setD] = useState(difficulty);
   const [state, setState] = useState<"idle" | "saving" | "error">("idle");
   const dirty = w !== weight || d !== difficulty;
   return (
     <div className="flex items-center gap-1">
-      <input aria-label="Peso" type="number" min={0} max={10} step={0.5} className="input w-16 px-2 py-1" value={w} onChange={(e) => setW(Number(e.target.value))} />
-      <select aria-label="Dificuldade" className="input w-20 px-2 py-1" value={d} onChange={(e) => setD(Number(e.target.value))}>
-        <option value={1}>Fácil</option>
-        <option value={2}>Média</option>
-        <option value={3}>Difícil</option>
+      <input aria-label={t("Peso", "Weight")} type="number" min={0} max={10} step={0.5} className="input w-16 px-2 py-1" value={w} onChange={(e) => setW(Number(e.target.value))} />
+      <select aria-label={t("Dificuldade", "Difficulty")} className="input w-20 px-2 py-1" value={d} onChange={(e) => setD(Number(e.target.value))}>
+        <option value={1}>{t("Fácil", "Easy")}</option>
+        <option value={2}>{t("Média", "Medium")}</option>
+        <option value={3}>{t("Difícil", "Hard")}</option>
       </select>
       <button
         className="btn-ghost px-2 py-1"
@@ -26,7 +28,7 @@ export function TopicWeightEditor({ id, weight, difficulty }: { id: string; weig
           router.refresh();
         }}
       >
-        {state === "saving" ? "…" : state === "error" ? "Erro" : "Guardar"}
+        {state === "saving" ? "…" : state === "error" ? t("Erro", "Error") : t("Guardar", "Save")}
       </button>
     </div>
   );

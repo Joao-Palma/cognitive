@@ -12,6 +12,8 @@ import { Modal } from "./Modal";
 import { EventForm, EventDraft } from "./EventForm";
 import { ClassScheduleForm } from "./ClassScheduleForm";
 import { Flash } from "./Flash";
+import enGbLocale from "@fullcalendar/core/locales/en-gb";
+import { useLang, useT } from "@/i18n/client";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const localDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -27,6 +29,8 @@ export function CalendarView({
   defaultUntil: string;
 }) {
   const ref = useRef<FullCalendar>(null);
+  const t = useT();
+  const lang = useLang();
   const router = useRouter();
   const [draft, setDraft] = useState<EventDraft | null>(null);
   const [showClasses, setShowClasses] = useState(false);
@@ -35,7 +39,7 @@ export function CalendarView({
   const done = (message: string | null) => {
     setDraft(null);
     setShowClasses(false);
-    setFlash(message ?? "Calendário atualizado. O plano não precisou de mudanças.");
+    setFlash(message ?? t("Calendário atualizado. O plano não precisou de mudanças.", "Calendar updated. The plan did not need any changes."));
     ref.current?.getApi().refetchEvents();
     router.refresh();
   };
@@ -89,7 +93,7 @@ export function CalendarView({
   const onMove = async (info: EventDropArg | EventResizeDoneArg) => {
     const p = info.event.extendedProps as Record<string, unknown>;
     if (p.kind !== "event") return info.revert();
-    if (p.recurring && !confirm("Este evento repete-se. Mover todas as ocorrências?")) return info.revert();
+    if (p.recurring && !confirm(t("Este evento repete-se. Mover todas as ocorrências?", "This event repeats. Move all occurrences?"))) return info.revert();
     const payload =
       "delta" in info
         ? { deltaStartMs: info.delta.milliseconds + info.delta.days * 86_400_000, deltaEndMs: info.delta.milliseconds + info.delta.days * 86_400_000 }
@@ -112,16 +116,16 @@ export function CalendarView({
       <Flash message={flash} />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <button className="btn" onClick={() => setDraft({ title: "", date: localDate(new Date()), start: "18:00", end: "19:00", allDay: false, category: "pessoal", blocksStudy: true, rrule: null })}>
-          + Evento
+          + {t("Evento", "Event")}
         </button>
-        <button className="btn-ghost" onClick={() => setShowClasses(true)}>🎓 Adicionar horário de aulas</button>
+        <button className="btn-ghost" onClick={() => setShowClasses(true)}>🎓 {t("Adicionar horário de aulas", "Add class timetable")}</button>
         <div className="ml-auto flex flex-wrap gap-3 text-xs text-slate-600">
-          <Legend cls="bg-slate-200 border-slate-400" label="Aula" />
-          <Legend cls="bg-amber-200 border-amber-500" label="Pessoal" />
-          <Legend cls="bg-red-200 border-red-500" label="Trabalho" />
-          <Legend cls="bg-violet-200 border-violet-500" label="Outro" />
-          <Legend cls="bg-blue-600 border-slate-900 border-2" label="Exame" />
-          <span>Sessões de estudo: cor da cadeira (clica para marcar feita)</span>
+          <Legend cls="bg-slate-200 border-slate-400" label={t("Aula", "Class")} />
+          <Legend cls="bg-amber-200 border-amber-500" label={t("Pessoal", "Personal")} />
+          <Legend cls="bg-red-200 border-red-500" label={t("Trabalho", "Work")} />
+          <Legend cls="bg-violet-200 border-violet-500" label={t("Outro", "Other")} />
+          <Legend cls="bg-blue-600 border-slate-900 border-2" label={t("Exame", "Exam")} />
+          <span>{t("Sessões de estudo: cor da cadeira (clica para marcar feita)", "Study sessions: course colour (click to mark done)")}</span>
         </div>
       </div>
       <div className="card p-2">
@@ -130,10 +134,10 @@ export function CalendarView({
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
           headerToolbar={{ left: "prev,next today", center: "title", right: "timeGridWeek,dayGridMonth" }}
-          buttonText={{ today: "hoje", week: "semana", month: "mês" }}
-          locale={ptLocale}
+          buttonText={lang === "en" ? { today: "today", week: "week", month: "month" } : { today: "hoje", week: "semana", month: "mês" }}
+          locale={lang === "en" ? enGbLocale : ptLocale}
           firstDay={1}
-          allDayText="dia"
+          allDayText={t("dia", "all-day")}
           timeZone="local"
           height="auto"
           slotMinTime="07:00:00"
@@ -155,15 +159,15 @@ export function CalendarView({
           eventResize={onMove}
         />
       </div>
-      <p className="mt-2 text-xs text-slate-500">Horas mostradas no fuso {timezone}. Arrasta um evento para o mudar — o plano ajusta-se logo.</p>
+      <p className="mt-2 text-xs text-slate-500">{t(`Horas mostradas no fuso ${timezone}. Arrasta um evento para o mudar — o plano ajusta-se logo.`, `Times shown in ${timezone}. Drag an event to move it — the plan adjusts right away.`)}</p>
 
       {draft && (
-        <Modal title={draft.id ? "Editar evento" : "Novo evento"} onClose={() => setDraft(null)}>
+        <Modal title={draft.id ? t("Editar evento", "Edit event") : t("Novo evento", "New event")} onClose={() => setDraft(null)}>
           <EventForm draft={draft} timezone={timezone} onDone={done} />
         </Modal>
       )}
       {showClasses && (
-        <Modal title="Horário de aulas" onClose={() => setShowClasses(false)}>
+        <Modal title={t("Horário de aulas", "Class timetable")} onClose={() => setShowClasses(false)}>
           <ClassScheduleForm courses={courses} defaultUntil={defaultUntil} onDone={done} />
         </Modal>
       )}

@@ -1,18 +1,20 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/i18n/client";
 
 export function TaskCheckbox({ id, done }: { id: string; done: boolean }) {
   const [checked, setChecked] = useState(done);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const t = useT();
   return (
     <input
       type="checkbox"
       className="h-4 w-4 cursor-pointer accent-slate-900"
       checked={checked}
       disabled={busy}
-      aria-label="Marcar como feita"
+      aria-label={t("Marcar como feita", "Mark as done")}
       onChange={async (e) => {
         const next = e.target.checked;
         setChecked(next);

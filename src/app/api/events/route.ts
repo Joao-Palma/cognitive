@@ -5,13 +5,15 @@ import { expandEvents } from "@/lib/events";
 import { toStoredEvent } from "@/lib/event-mapping";
 import { courseColor } from "@/lib/colors";
 import { addDays, dbDateToDayKey } from "@/lib/dates";
+import { makeT, topicTitle } from "@/i18n/core";
 import { parseEventInput } from "./parse";
 
 /** Feed para o FullCalendar: eventos do aluno + exames + sessões de estudo. */
-export const GET = withUser(async (userId, req) => {
+export const GET = withUser(async ({ userId, lang }, req) => {
+  const t = makeT(lang);
   const url = new URL(req.url);
-  const start = date(url.searchParams.get("start"), "start");
-  const end = date(url.searchParams.get("end"), "end");
+  const start = date(url.searchParams.get("start"), ["start", "start"]);
+  const end = date(url.searchParams.get("end"), ["end", "end"]);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
   const stored = await prisma.calendarEvent.findMany({ where: { userId } });
@@ -31,7 +33,7 @@ export const GET = withUser(async (userId, req) => {
   });
   const examEvents = exams.map((e) => ({
     id: `exam:${e.id}`,
-    title: `📝 Exame ${e.course.acronym}`,
+    title: `📝 ${t("Exame", "Exam")} ${e.course.acronym}`,
     start: e.datetime.toISOString(),
     end: new Date(e.datetime.getTime() + e.durationMin * 60_000).toISOString(),
     backgroundColor: courseColor(e.course.acronym),
@@ -45,30 +47,30 @@ export const GET = withUser(async (userId, req) => {
     where: { exam: { userId }, day: { gte: new Date(start.getTime() - 86_400_000), lt: end } },
     include: { exam: { include: { course: true } }, topic: true },
   });
-  const taskEvents = tasks.map((t) => {
-    const day = dbDateToDayKey(t.day);
-    const title = t.topic?.title ?? "Revisão geral";
-    const part = t.parts > 1 ? ` (${t.part}/${t.parts})` : "";
+  const taskEvents = tasks.map((tk) => {
+    const day = dbDateToDayKey(tk.day);
+    const title = tk.topic ? topicTitle(tk.topic, lang) : t("Revisão geral", "General review");
+    const part = tk.parts > 1 ? ` (${tk.part}/${tk.parts})` : "";
     return {
-      id: `task:${t.id}`,
-      title: `${t.done ? "✔ " : ""}${t.exam.course.acronym} · ${title}${part} — ${t.hours}h`,
+      id: `task:${tk.id}`,
+      title: `${tk.done ? "✔ " : ""}${tk.exam.course.acronym} · ${title}${part} — ${tk.hours}h`,
       start: day,
       end: addDays(day, 1),
       allDay: true,
-      backgroundColor: courseColor(t.exam.course.acronym),
-      borderColor: courseColor(t.exam.course.acronym),
-      classNames: ["task", t.done ? "done" : "todo"],
+      backgroundColor: courseColor(tk.exam.course.acronym),
+      borderColor: courseColor(tk.exam.course.acronym),
+      classNames: ["task", tk.done ? "done" : "todo"],
       editable: false,
-      extendedProps: { kind: "task", taskId: t.id, done: t.done },
+      extendedProps: { kind: "task", taskId: tk.id, done: tk.done },
     };
   });
 
   return [...occurrences, ...examEvents, ...taskEvents];
 });
 
-export const POST = withUser(async (userId, req) => {
+export const POST = withUser(async ({ userId, lang }, req) => {
   const data = parseEventInput(await body(req));
-  if (!data.title || !data.start || !data.end) throw new HttpError(400, "Título, início e fim são obrigatórios");
+  if (!data.title || !data.start || !data.end) throw new HttpError(400, "Título, início e fim são obrigatórios", "Title, start and end are required");
   const event = await prisma.calendarEvent.create({ data: { ...data, userId } as never });
-  return { event, summary: await replan(userId) };
+  return { event, summary: await replan(userId, new Date(), lang) };
 });

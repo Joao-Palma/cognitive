@@ -64,6 +64,12 @@ async function main() {
     }
   }
 
+  // nomes em inglês (a API aceita lang=en-GB; os programas continuam só em português)
+  const nameEn = new Map<string, string>();
+  for (const degree of degrees)
+    for (const term of degree.academicTerms.slice(0, 2))
+      for (const c of await get<FenixCourseRef[]>(`/degrees/${degree.id}/courses?academicTerm=${term}&lang=en-GB`)) nameEn.set(c.id, c.name);
+
   console.log(`${picked.size} cadeiras encontradas`);
   let withTopics = 0;
   for (const c of picked.values()) {
@@ -77,12 +83,13 @@ async function main() {
         fenixId: c.id,
         acronym: cleanAcronym(c.acronym, c.name),
         name: c.name,
+        nameEn: nameEn.get(c.id) ?? null,
         ects: Number(c.credits) || 6,
         semester: c.semester,
         programRaw,
         lastScrapedAt: new Date(),
       },
-      update: { acronym: cleanAcronym(c.acronym, c.name), name: c.name, ects: Number(c.credits) || 6, semester: c.semester, programRaw, lastScrapedAt: new Date() },
+      update: { acronym: cleanAcronym(c.acronym, c.name), name: c.name, nameEn: nameEn.get(c.id) ?? null, ects: Number(c.credits) || 6, semester: c.semester, programRaw, lastScrapedAt: new Date() },
       include: { topics: true },
     });
 

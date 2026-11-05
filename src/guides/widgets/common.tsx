@@ -3,6 +3,7 @@ import { M2, V2, mulMV, fmt } from "../math/linalg2";
 import { Path, Poly } from "../ui/Plane";
 import { M } from "../ui/Tex";
 import { Slider } from "../ui/blocks";
+import { useLang } from "@/i18n/client";
 
 /** Grelha transformada por A (linhas da grelha inteira são mapeadas em retas). */
 export function TransformedGrid({ A, range = 5, color = "#93c5fd" }: { A: M2; range?: number; color?: string }) {
@@ -66,4 +67,9 @@ export function niceDir(v: V2): V2 {
   const first = Math.abs(w[0]) > 1e-9 ? w[0] : w[1];
   if (first < 0) w = [-w[0], -w[1]];
   return Math.max(Math.abs(w[0]), Math.abs(w[1])) > 20 ? [v[0], v[1]] : w;
+}
+
+/** Notação da expansão linear: 𝓛{…} no IST (pt), span{…} em inglês. */
+export function useSpan(): string {
+  return useLang() === "en" ? "\\operatorname{span}" : "\\mathcal{L}";
 }

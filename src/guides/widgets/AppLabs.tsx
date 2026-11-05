@@ -4,12 +4,14 @@ import { M2, V2, mulMV, eigen2, fmt } from "../math/linalg2";
 import { Plane, Path, Dot, Line, Handle, COLORS } from "../ui/Plane";
 import { M } from "../ui/Tex";
 import { Lab, Presets, Slider } from "../ui/blocks";
+import { useT } from "@/i18n/client";
 import { MatrixSliders, Readout, texM2, n } from "./common";
 
 const r2 = (x: number) => Math.round(x * 100) / 100;
 
 /** x_{k+1} = A x_k: estabilidade governada por |λ|. */
 export function DynamicsLab() {
+  const t = useT();
   const [A, setA] = useState<M2>([[0.9, 0.3], [-0.3, 0.9]]);
   const [x0, setX0] = useState<V2>([3, 0]);
   const [steps, setSteps] = useState(30);
@@ -21,7 +23,7 @@ export function DynamicsLab() {
   const e = eigen2(A);
   const rho = e.real ? Math.max(...e.values.map(Math.abs)) : Math.hypot(e.complex!.re, e.complex!.im);
   return (
-    <Lab title="Sistema dinâmico discreto xₖ₊₁ = A xₖ" hint="Arrasta o ponto inicial x₀. Se todos os |λ| < 1 a trajetória converge para 0 (estável); se algum |λ| > 1 diverge. Valores complexos fazem espirais.">
+    <Lab title={t("Sistema dinâmico discreto xₖ₊₁ = A xₖ", "Discrete dynamical system xₖ₊₁ = A xₖ")} hint={t("Arrasta o ponto inicial x₀. Se todos os |λ| < 1 a trajetória converge para 0 (estável); se algum |λ| > 1 diverge. Valores complexos fazem espirais.", "Drag the starting point x₀. If every |λ| < 1 the trajectory converges to 0 (stable); if some |λ| > 1 it diverges. Complex eigenvalues make spirals.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={5}>
           {e.real && e.vectors.map((vs, k) => vs.length === 1 && <Line key={k} d={vs[0]} color="#cbd5e1" dashed />)}
@@ -31,14 +33,14 @@ export function DynamicsLab() {
         </Plane>
         <div className="space-y-3">
           <MatrixSliders A={A} onChange={setA} min={-1.5} max={1.5} step={0.05} />
-          <Slider label="passos" value={steps} min={1} max={60} step={1} onChange={setSteps} />
+          <Slider label={t("passos", "steps")} value={steps} min={1} max={60} step={1} onChange={setSteps} />
           <Presets
             items={[
-              { label: "Espiral estável", value: [[0.9, 0.3], [-0.3, 0.9]] as M2 },
-              { label: "Espiral instável", value: [[1, 0.3], [-0.3, 1]] as M2 },
-              { label: "Sela", value: [[1.2, 0], [0, 0.7]] as M2 },
-              { label: "Nó estável", value: [[0.8, 0.1], [0.1, 0.6]] as M2 },
-              { label: "Rotação pura", value: [[0.8, -0.6], [0.6, 0.8]] as M2 },
+              { label: t("Espiral estável", "Stable spiral"), value: [[0.9, 0.3], [-0.3, 0.9]] as M2 },
+              { label: t("Espiral instável", "Unstable spiral"), value: [[1, 0.3], [-0.3, 1]] as M2 },
+              { label: t("Sela", "Saddle"), value: [[1.2, 0], [0, 0.7]] as M2 },
+              { label: t("Nó estável", "Stable node"), value: [[0.8, 0.1], [0.1, 0.6]] as M2 },
+              { label: t("Rotação pura", "Pure rotation"), value: [[0.8, -0.6], [0.6, 0.8]] as M2 },
             ]}
             onPick={setA}
           />
@@ -51,12 +53,12 @@ export function DynamicsLab() {
               )}
             </div>
             <div>
-              Raio espetral <M>{`\\rho(A) = \\max|\\lambda| = ${n(rho, 3)}`}</M> →{" "}
+              {t("Raio espetral", "Spectral radius")} <M>{`\\rho(A) = \\max|\\lambda| = ${n(rho, 3)}`}</M> →{" "}
               <b className={rho < 1 ? "text-green-700" : rho > 1 ? "text-red-700" : "text-blue-700"}>
-                {rho < 1 - 1e-9 ? "estável: xₖ → 0" : rho > 1 + 1e-9 ? "instável (para quase todo o x₀)" : "no limite: nem converge para 0 nem diverge"}
+                {rho < 1 - 1e-9 ? t("estável: xₖ → 0", "stable: xₖ → 0") : rho > 1 + 1e-9 ? t("instável (para quase todo o x₀)", "unstable (for almost every x₀)") : t("no limite: nem converge para 0 nem diverge", "borderline: neither converges to 0 nor diverges")}
               </b>
             </div>
-            <div className="text-slate-600">Porquê: se x₀ = c₁v₁ + c₂v₂ (vetores próprios), então <M>{"x_k = c_1\\lambda_1^k v_1 + c_2 \\lambda_2^k v_2"}</M>.</div>
+            <div className="text-slate-600">{t("Porquê: se x₀ = c₁v₁ + c₂v₂ (vetores próprios), então", "Why: if x₀ = c₁v₁ + c₂v₂ (eigenvectors), then")} <M>{"x_k = c_1\\lambda_1^k v_1 + c_2 \\lambda_2^k v_2"}</M>.</div>
           </Readout>
         </div>
       </div>
@@ -66,6 +68,7 @@ export function DynamicsLab() {
 
 /** Cadeia de Markov com 2 estados: converge para o vetor próprio de λ = 1. */
 export function MarkovLab() {
+  const t = useT();
   const [p, setP] = useState(0.1); // A → B
   const [q, setQ] = useState(0.3); // B → A
   const [k, setK] = useState(0);
@@ -81,18 +84,18 @@ export function MarkovLab() {
   const W = 320;
   const H = 120;
   return (
-    <Lab title="Cadeia de Markov: clientes entre duas operadoras" hint="Todos os meses, uma fração p dos clientes de A muda para B e uma fração q dos de B muda para A. A distribuição converge para o vetor próprio associado a λ = 1, seja qual for o início.">
+    <Lab title={t("Cadeia de Markov: clientes entre duas operadoras", "Markov chain: customers between two providers")} hint={t("Todos os meses, uma fração p dos clientes de A muda para B e uma fração q dos de B muda para A. A distribuição converge para o vetor próprio associado a λ = 1, seja qual for o início.", "Every month a fraction p of A's customers switches to B and a fraction q of B's switches to A. The distribution converges to the eigenvector for λ = 1, whatever the start.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-3">
           <Slider label="p (A→B)" value={p} min={0} max={1} step={0.01} onChange={setP} display={fmt(p)} />
           <Slider label="q (B→A)" value={q} min={0} max={1} step={0.01} onChange={setQ} display={fmt(q)} />
-          <Slider label="início A" value={x0a} min={0} max={1} step={0.05} onChange={setX0a} display={`${Math.round(x0a * 100)}%`} />
-          <Slider label="mês k" value={k} min={0} max={40} step={1} onChange={setK} />
+          <Slider label={t("início A", "start A")} value={x0a} min={0} max={1} step={0.05} onChange={setX0a} display={`${Math.round(x0a * 100)}%`} />
+          <Slider label={t("mês k", "month k")} value={k} min={0} max={40} step={1} onChange={setK} />
           <Readout>
-            <div><M>{`P = ${texM2(P)}`}</M> (cada coluna soma 1)</div>
+            <div><M>{`P = ${texM2(P)}`}</M> {t("(cada coluna soma 1)", "(each column sums to 1)")}</div>
             <div><M>{`x_{${k}} = P^{${k}}x_0 = (${n(xk[0], 3)},\\ ${n(xk[1], 3)})`}</M></div>
-            <div>Estado estacionário: <M>{`Pv = v \\Rightarrow v = \\left(\\tfrac{q}{p+q}, \\tfrac{p}{p+q}\\right) = (${n(steady[0], 3)},\\ ${n(steady[1], 3)})`}</M></div>
-            <div className="text-slate-600">O outro valor próprio é <M>{`1 - p - q = ${n(1 - p - q)}`}</M>; quanto menor |1 − p − q|, mais rápida a convergência.</div>
+            <div>{t("Estado estacionário:", "Steady state:")} <M>{`Pv = v \\Rightarrow v = \\left(\\tfrac{q}{p+q}, \\tfrac{p}{p+q}\\right) = (${n(steady[0], 3)},\\ ${n(steady[1], 3)})`}</M></div>
+            <div className="text-slate-600">{t("O outro valor próprio é", "The other eigenvalue is")} <M>{`1 - p - q = ${n(1 - p - q)}`}</M>; {t("quanto menor |1 − p − q|, mais rápida a convergência.", "the smaller |1 − p − q|, the faster the convergence.")}</div>
           </Readout>
         </div>
         <svg viewBox={`0 0 ${W} ${H + 40}`} className="w-full rounded-lg border border-slate-200 bg-white">
@@ -100,9 +103,9 @@ export function MarkovLab() {
           <polyline fill="none" stroke="#2563eb" strokeWidth={2} points={series.map((s, i) => `${r2(20 + (i * (W - 25)) / 40)},${r2(10 + H * (1 - s[0]))}`).join(" ")} />
           <polyline fill="none" stroke="#dc2626" strokeWidth={2} points={series.map((s, i) => `${r2(20 + (i * (W - 25)) / 40)},${r2(10 + H * (1 - s[1]))}`).join(" ")} />
           <line x1={20 + (k * (W - 25)) / 40} y1={5} x2={20 + (k * (W - 25)) / 40} y2={H + 15} stroke="#0f172a" />
-          <text x={20} y={H + 32} fontSize={11} fill="#2563eb">— quota de A</text>
-          <text x={120} y={H + 32} fontSize={11} fill="#dc2626">— quota de B</text>
-          <text x={220} y={H + 32} fontSize={11} fill="#64748b">meses 0–40</text>
+          <text x={20} y={H + 32} fontSize={11} fill="#2563eb">— {t("quota de A", "share of A")}</text>
+          <text x={120} y={H + 32} fontSize={11} fill="#dc2626">— {t("quota de B", "share of B")}</text>
+          <text x={220} y={H + 32} fontSize={11} fill="#64748b">{t("meses 0–40", "months 0–40")}</text>
         </svg>
       </div>
     </Lab>
@@ -114,6 +117,7 @@ const POS: [number, number][] = [[60, 50], [230, 50], [230, 170], [60, 170]];
 
 /** PageRank num grafo de 4 páginas: o vetor próprio dominante da matriz do Google. */
 export function PageRankLab() {
+  const t = useT();
   const [links, setLinks] = useState<boolean[][]>([
     [false, true, true, false],
     [false, false, true, false],
@@ -142,7 +146,7 @@ export function PageRankLab() {
   const toggle = (i: number, j: number) => i !== j && setLinks(links.map((row, a) => row.map((x, b) => (a === i && b === j ? !x : x))));
   const max = Math.max(...rank);
   return (
-    <Lab title="PageRank" hint="Clica na tabela para criar ou remover links (linha → coluna). O ranking é o vetor próprio de valor próprio 1 da matriz do Google G = d·T + (1−d)/n·𝟙, calculado pelo método das potências.">
+    <Lab title="PageRank" hint={t("Clica na tabela para criar ou remover links (linha → coluna). O ranking é o vetor próprio de valor próprio 1 da matriz do Google G = d·T + (1−d)/n·𝟙, calculado pelo método das potências.", "Click the table to add or remove links (row → column). The ranking is the eigenvector for eigenvalue 1 of the Google matrix G = d·T + (1−d)/n·𝟙, computed by power iteration.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <svg viewBox="0 0 290 220" className="w-full rounded-lg border border-slate-200 bg-white">
           <defs>
@@ -170,7 +174,7 @@ export function PageRankLab() {
         <div className="space-y-3">
           <table className="text-sm">
             <thead>
-              <tr><th className="px-2 text-xs text-slate-500">de \ para</th>{NODES.map((x) => <th key={x} className="px-2">{x}</th>)}</tr>
+              <tr><th className="px-2 text-xs text-slate-500">{t("de \\ para", "from \\ to")}</th>{NODES.map((x) => <th key={x} className="px-2">{x}</th>)}</tr>
             </thead>
             <tbody>
               {links.map((row, i) => (
@@ -178,7 +182,7 @@ export function PageRankLab() {
                   <th className="px-2">{NODES[i]}</th>
                   {row.map((on, j) => (
                     <td key={j} className="px-1">
-                      <button disabled={i === j} onClick={() => toggle(i, j)} className={`h-7 w-7 rounded ${i === j ? "bg-slate-100" : on ? "bg-blue-600 text-white" : "border border-slate-300 bg-white"}`} aria-label={`link ${NODES[i]} para ${NODES[j]}`}>
+                      <button disabled={i === j} onClick={() => toggle(i, j)} className={`h-7 w-7 rounded ${i === j ? "bg-slate-100" : on ? "bg-blue-600 text-white" : "border border-slate-300 bg-white"}`} aria-label={t(`link ${NODES[i]} para ${NODES[j]}`, `link ${NODES[i]} to ${NODES[j]}`)}>
                         {on ? "→" : ""}
                       </button>
                     </td>
@@ -200,7 +204,7 @@ export function PageRankLab() {
                   <span className="w-12 text-right tabular-nums">{fmt(r, 3)}</span>
                 </div>
               ))}
-            <div className="text-xs text-slate-500">Convergiu em {iters} iterações de <M>{"r \\leftarrow G r"}</M>. Os valores somam 1.</div>
+            <div className="text-xs text-slate-500">{t(`Convergiu em ${iters} iterações de`, `Converged in ${iters} iterations of`)} <M>{"r \\leftarrow G r"}</M>. {t("Os valores somam 1.", "The values sum to 1.")}</div>
           </Readout>
         </div>
       </div>
@@ -210,6 +214,7 @@ export function PageRankLab() {
 
 /** Potências de um bloco de Jordan: J^k = [[λ^k, kλ^{k-1}],[0, λ^k]]. */
 export function JordanPowersLab() {
+  const t = useT();
   const [lambda, setLambda] = useState(0.9);
   const [k, setK] = useState(5);
   const lk = lambda ** k;
@@ -222,7 +227,7 @@ export function JordanPowersLab() {
   const maxV = Math.min(20, Math.max(...valsJ, ...valsD, 1));
   const y = (v: number) => 10 + H * (1 - Math.min(v, maxV) / maxV);
   return (
-    <Lab title="Potências de um bloco de Jordan" hint="Compara λI (diagonalizável) com o bloco de Jordan J. O 1 fora da diagonal gera o termo kλᵏ⁻¹, que cresce antes de decair, mesmo com |λ| < 1.">
+    <Lab title={t("Potências de um bloco de Jordan", "Powers of a Jordan block")} hint={t("Compara λI (diagonalizável) com o bloco de Jordan J. O 1 fora da diagonal gera o termo kλᵏ⁻¹, que cresce antes de decair, mesmo com |λ| < 1.", "Compare λI (diagonalizable) with the Jordan block J. The off-diagonal 1 produces the term kλᵏ⁻¹, which grows before it decays, even when |λ| < 1.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-3">
           <Slider label={<M>{"\\lambda"}</M>} value={lambda} min={-1.2} max={1.2} step={0.05} onChange={setLambda} display={fmt(lambda)} />
@@ -230,7 +235,7 @@ export function JordanPowersLab() {
           <Readout>
             <div><M>{`J = ${texM2(J)},\\quad J^{${k}} = \\begin{bmatrix} \\lambda^{k} & k\\lambda^{k-1} \\\\ 0 & \\lambda^{k}\\end{bmatrix} = \\begin{bmatrix} ${n(lk, 3)} & ${n(off, 3)} \\\\ 0 & ${n(lk, 3)}\\end{bmatrix}`}</M></div>
             <div><M>{`(\\lambda I)^{${k}} = ${texM2([[lk, 0], [0, lk]] as M2, 3)}`}</M></div>
-            <div className="text-slate-600">Ambas têm o mesmo polinómio característico <M>{`p(t) = (t - ${n(lambda)})^2`}</M>, mas em J tem-se m.g. = 1 &lt; m.a. = 2: J não é semelhante a nenhuma matriz diagonal.</div>
+            <div className="text-slate-600">{t("Ambas têm o mesmo polinómio característico", "Both have the same characteristic polynomial")} <M>{`p(t) = (t - ${n(lambda)})^2`}</M>, {t("mas em J tem-se m.g. = 1 < m.a. = 2: J não é semelhante a nenhuma matriz diagonal.", "but for J, g.m. = 1 < a.m. = 2: J is not similar to any diagonal matrix.")}</div>
           </Readout>
         </div>
         <svg viewBox={`0 0 ${W} ${H + 40}`} className="w-full rounded-lg border border-slate-200 bg-white">

@@ -1,6 +1,7 @@
 "use client";
 /** Editor de matriz pequena (inteiros ou frações "a/b"). */
 import { Frac } from "../math/fraction";
+import { useT } from "@/i18n/client";
 
 export function parseCell(s: string): Frac | null {
   const t = s.trim().replace(",", ".");
@@ -22,6 +23,7 @@ export function MatrixEditor({
   augCol?: number;
   highlight?: (i: number, j: number) => boolean;
 }) {
+  const t = useT();
   return (
     <div className="inline-block rounded-lg border-x-2 border-slate-700 px-1 py-1">
       {cells.map((row, i) => (
@@ -29,7 +31,7 @@ export function MatrixEditor({
           {row.map((v, j) => (
             <input
               key={j}
-              aria-label={`linha ${i + 1}, coluna ${j + 1}`}
+              aria-label={t(`linha ${i + 1}, coluna ${j + 1}`, `row ${i + 1}, column ${j + 1}`)}
               className={`m-0.5 w-12 rounded border px-1 py-1 text-center text-sm tabular-nums ${
                 parseCell(v) ? "border-slate-200" : "border-red-400 bg-red-50"
               } ${highlight?.(i, j) ? "bg-yellow-100 font-bold" : ""} ${augCol !== undefined && j === augCol ? "ml-3" : ""}`}

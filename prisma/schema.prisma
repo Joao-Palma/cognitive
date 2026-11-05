@@ -15,6 +15,7 @@ model Course {
   fenixId       String    @unique
   acronym       String
   name          String
+  nameEn        String? // nome em inglês (Fénix, lang=en-GB)
   ects          Float     @default(6)
   semester      Int?
   programRaw    String?
@@ -29,6 +30,7 @@ model Topic {
   course     Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   order      Int
   title      String
+  titleEn    String? // tradução (os programas do Fénix só existem em português)
   weight     Float        @default(1)
   difficulty Int          @default(2) // 1–3
   estHours   Float?

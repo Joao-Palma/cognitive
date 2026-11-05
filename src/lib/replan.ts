@@ -9,8 +9,8 @@ import { expandEvents } from "./events";
 import { examDemand } from "./planner";
 import { schedule, ScheduleExam } from "./scheduler";
 import { toStoredEvent } from "./event-mapping";
+import { dateLocale, Lang } from "@/i18n/core";
 
-const WEEKDAYS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
 export interface ReplanSummary {
   moved: number;
@@ -18,7 +18,7 @@ export interface ReplanSummary {
   exams: { id: string; acronym: string; status: string; startDay: string | null; missingHours: number }[];
 }
 
-export async function replan(userId: string, now = new Date()): Promise<ReplanSummary> {
+export async function replan(userId: string, now = new Date(), lang: Lang = "pt"): Promise<ReplanSummary> {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const tz = user.timezone;
   const today = toDayKey(now, tz);
@@ -124,14 +124,15 @@ export async function replan(userId: string, now = new Date()): Promise<ReplanSu
       }
     }
   }
+  const weekday = (d: DayKey) => new Date(d + "T12:00:00Z").toLocaleDateString(dateLocale(lang), { weekday: "long", timeZone: "UTC" });
   const parts = [...movedBy].map(([a, { count: n, days }]) => {
-    const names = [...days].sort().map((d) => WEEKDAYS[new Date(d + "T12:00:00Z").getUTCDay()]);
-    return `${n} ${n === 1 ? "sessão" : "sessões"} de ${a} → ${[...new Set(names)].join(", ")}`;
+    const names = [...new Set([...days].sort().map(weekday))].join(", ");
+    return lang === "en" ? `${n} ${n === 1 ? "session" : "sessions"} of ${a} → ${names}` : `${n} ${n === 1 ? "sessão" : "sessões"} de ${a} → ${names}`;
   });
 
   return {
     moved,
-    message: parts.length ? `Plano ajustado: ${parts.join("; ")}` : null,
+    message: parts.length ? `${lang === "en" ? "Plan adjusted" : "Plano ajustado"}: ${parts.join("; ")}` : null,
     exams: exams.map((e) => {
       const r = scheduleResult.exams.get(e.id);
       return {

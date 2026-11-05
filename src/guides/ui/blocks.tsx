@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useT } from "@/i18n/client";
 
 export function Section({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
@@ -22,16 +23,18 @@ function Box({ tone, label, title, children }: { tone: string; label: string; ti
   );
 }
 
-export const Def = (p: { title?: string; children: React.ReactNode }) => <Box tone="border-blue-500 bg-blue-50" label="Definição" {...p} />;
-export const Thm = (p: { title?: string; children: React.ReactNode }) => <Box tone="border-violet-500 bg-violet-50" label="Teorema" {...p} />;
-export const Note = (p: { title?: string; children: React.ReactNode }) => <Box tone="border-slate-400 bg-slate-50" label="Nota" {...p} />;
-export const Pitfall = (p: { title?: string; children: React.ReactNode }) => <Box tone="border-red-500 bg-red-50" label="Erro comum" {...p} />;
-export const Tip = (p: { title?: string; children: React.ReactNode }) => <Box tone="border-emerald-500 bg-emerald-50" label="Truque" {...p} />;
+type BoxProps = { title?: string; children: React.ReactNode };
+export const Def = (p: BoxProps) => <Box tone="border-blue-500 bg-blue-50" label={useT()("Definição", "Definition")} {...p} />;
+export const Thm = (p: BoxProps) => <Box tone="border-violet-500 bg-violet-50" label={useT()("Teorema", "Theorem")} {...p} />;
+export const Note = (p: BoxProps) => <Box tone="border-slate-400 bg-slate-50" label={useT()("Nota", "Note")} {...p} />;
+export const Pitfall = (p: BoxProps) => <Box tone="border-red-500 bg-red-50" label={useT()("Erro comum", "Common mistake")} {...p} />;
+export const Tip = (p: BoxProps) => <Box tone="border-emerald-500 bg-emerald-50" label={useT()("Truque", "Tip")} {...p} />;
 
 export function Example({ title, children }: { title?: string; children: React.ReactNode }) {
+  const t = useT();
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3">
-      <div className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-800">Exemplo resolvido{title && ` — ${title}`}</div>
+      <div className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-800">{t("Exemplo resolvido", "Worked example")}{title && ` — ${title}`}</div>
       <div className="space-y-2">{children}</div>
     </div>
   );
@@ -40,12 +43,13 @@ export function Example({ title, children }: { title?: string; children: React.R
 /** Exercício com solução escondida (tenta primeiro!). */
 export function Exercise({ n, children, solution }: { n: number; children: React.ReactNode; solution: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const t = useT();
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <div className="mb-1 text-xs font-bold uppercase tracking-wide text-slate-500">Exercício {n}</div>
+      <div className="mb-1 text-xs font-bold uppercase tracking-wide text-slate-500">{t("Exercício", "Exercise")} {n}</div>
       <div className="space-y-2">{children}</div>
       <button onClick={() => setOpen(!open)} className="mt-2 text-sm font-medium text-blue-700 hover:underline">
-        {open ? "Esconder solução" : "Ver solução"}
+        {open ? t("Esconder solução", "Hide solution") : t("Ver solução", "Show solution")}
       </button>
       {open && <div className="mt-2 space-y-2 border-t border-slate-100 pt-2 text-slate-700">{solution}</div>}
     </div>

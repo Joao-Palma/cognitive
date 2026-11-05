@@ -1,12 +1,12 @@
 /** Conversão entre o formulário simples de recorrência e uma RRULE semanal. */
 export const WEEKDAYS = [
-  { code: "MO", short: "S", label: "segunda" },
-  { code: "TU", short: "T", label: "terça" },
-  { code: "WE", short: "Q", label: "quarta" },
-  { code: "TH", short: "Q", label: "quinta" },
-  { code: "FR", short: "S", label: "sexta" },
-  { code: "SA", short: "S", label: "sábado" },
-  { code: "SU", short: "D", label: "domingo" },
+  { code: "MO", short: "S", label: "segunda", shortEn: "M", labelEn: "Monday" },
+  { code: "TU", short: "T", label: "terça", shortEn: "T", labelEn: "Tuesday" },
+  { code: "WE", short: "Q", label: "quarta", shortEn: "W", labelEn: "Wednesday" },
+  { code: "TH", short: "Q", label: "quinta", shortEn: "T", labelEn: "Thursday" },
+  { code: "FR", short: "S", label: "sexta", shortEn: "F", labelEn: "Friday" },
+  { code: "SA", short: "S", label: "sábado", shortEn: "S", labelEn: "Saturday" },
+  { code: "SU", short: "D", label: "domingo", shortEn: "S", labelEn: "Sunday" },
 ] as const;
 
 export function buildWeeklyRrule(days: string[], untilIso: string | null): string {

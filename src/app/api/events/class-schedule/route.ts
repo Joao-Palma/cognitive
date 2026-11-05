@@ -14,19 +14,19 @@ interface Slot {
 }
 
 /** Cria o horário de aulas do semestre como eventos semanais recorrentes. */
-export const POST = withUser(async (userId, req) => {
+export const POST = withUser(async ({ userId, lang }, req) => {
   const b = await body<{ slots: Slot[]; until: string }>(req);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const tz = user.timezone;
-  if (!Array.isArray(b.slots) || b.slots.length === 0) throw new HttpError(400, "Sem aulas");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(b.until)) throw new HttpError(400, "Data de fim inválida");
+  if (!Array.isArray(b.slots) || b.slots.length === 0) throw new HttpError(400, "Sem aulas", "No classes");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(b.until)) throw new HttpError(400, "Data de fim inválida", "Invalid end date");
   const today = toDayKey(new Date(), tz);
   const untilUtc = zonedToUtc(b.until, "23:59", tz).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
   const data = b.slots.map((s) => {
     const idx = DAYS.indexOf(s.weekday);
     if (idx < 0 || !HHMM.test(s.start) || !HHMM.test(s.end) || s.start >= s.end || !s.title?.trim())
-      throw new HttpError(400, `Aula inválida: ${s.title ?? ""}`);
+      throw new HttpError(400, `Aula inválida: ${s.title ?? ""}`, `Invalid class: ${s.title ?? ""}`);
     // primeira ocorrência: próximo dia da semana a partir de hoje
     const todayIdx = (new Date(today + "T12:00:00Z").getUTCDay() + 6) % 7; // 0 = segunda
     const first = addDays(today, (idx - todayIdx + 7) % 7);
@@ -41,5 +41,5 @@ export const POST = withUser(async (userId, req) => {
     };
   });
   await prisma.calendarEvent.createMany({ data });
-  return { created: data.length, summary: await replan(userId) };
+  return { created: data.length, summary: await replan(userId, new Date(), lang) };
 });
