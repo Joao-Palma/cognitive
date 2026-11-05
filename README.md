@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Estudo LEIC
 
-## Getting Started
+App de planeamento de estudo para a LEIC (Técnico). Indicas a data do exame e até que matéria sai. A app usa o
+programa da cadeira (importado do Fénix) e o teu calendário para dizer **quando começar a estudar** e **o que
+estudar em cada dia**. Vários testes na mesma semana são conciliados num único plano.
 
-First, run the development server:
+## Arranque
 
 ```bash
+npm install
+cp .env.example .env
+npx prisma migrate dev     # cria a BD SQLite
+npm run scrape             # importa cadeiras e tópicos da LEIC-A/T (API pública do Fénix)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Em desenvolvimento há um login "Dev (só email)" em `/api/auth/signin`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | O quê |
+|---|---|
+| `npm test` | Testes do núcleo (planner, recorrências, disponibilidade, scheduler, parser) |
+| `npm run scrape` | Importa/atualiza cadeiras do Fénix (`-- --fresh` ignora a cache) |
+| `npm run db:studio` | Inspecionar a BD |
 
-## Learn More
+## Como o plano é calculado (determinístico)
 
-To learn more about Next.js, take a look at the following resources:
+1. **Horas por tópico** = `ECTS × 28 h × 0,15`, repartidas por `peso × dificuldade`. Junta-se um bloco de revisão de max(2 h, 15%).
+2. **Capacidade diária** = `min(horas/dia, tempo livre na janela de estudo)`. O tempo livre já desconta os eventos do calendário (aulas recorrentes incluídas) e os próprios exames.
+3. **Agendamento** de trás para a frente, a partir do último exame. Em cada dia, a prioridade vai para o exame mais próximo, por isso a véspera de cada teste fica para essa cadeira.
+4. Se não couber, o plano é comprimido até ao tempo livre total (`compressed`). Se mesmo assim não couber, fica `infeasible` e a app indica as horas em falta.
+5. As tarefas já feitas nunca se movem. Qualquer alteração a exames, eventos ou definições gera um replan imediato.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Código: `src/lib/{planner,availability,events,scheduler,replan}.ts`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Premium
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`User.isPremium` controla o acesso aos guias por tópico (`/guides/[topicId]`). Os pagamentos (Stripe) ficam para a fase 2.
