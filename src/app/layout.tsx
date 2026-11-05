@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Link href="/api/auth/signout" prefetch={false} className="ml-auto text-slate-500 hover:underline">Sair</Link>
               </>
             ) : (
-              <Link href="/api/auth/signin" prefetch={false} className="ml-auto btn">Entrar</Link>
+              <Link href="/login" className="ml-auto btn">Entrar</Link>
             )}
           </nav>
         </header>

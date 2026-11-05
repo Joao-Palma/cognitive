@@ -14,7 +14,7 @@ npm run scrape             # importa cadeiras e tópicos da LEIC-A/T (API públi
 npm run dev                # http://localhost:3100
 ```
 
-Em desenvolvimento há um login "Dev (só email)" em `/api/auth/signin`.
+Para entrar, basta o email em `/login`, sem verificação. Fica ativo em dev, e em produção só com `ALLOW_EMAIL_ONLY_LOGIN=true`.
 
 ## Comandos
 
