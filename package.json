@@ -10,7 +10,9 @@
     "test": "vitest run",
     "scrape": "tsx scripts/scrape-fenix.ts",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:setup": "prisma migrate deploy && prisma db seed",
+    "db:seed": "prisma db seed"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.22",
@@ -48,5 +50,8 @@
     "@prisma/engines@6.19.3": true,
     "esbuild@0.28.2": true,
     "prisma@6.19.3": true
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
