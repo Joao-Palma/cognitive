@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // ligação com pooling (runtime)
+  directUrl = env("DATABASE_URL_UNPOOLED") // ligação direta (migrações)
 }
 
 // ---------- Currículo (Fénix) ----------
@@ -91,7 +92,7 @@ model CalendarEvent {
   category    String   @default("outro") // aula | pessoal | trabalho | outro
   blocksStudy Boolean  @default(true)
   rrule       String? // ex: FREQ=WEEKLY;BYDAY=MO,WE;UNTIL=20270131T235959Z
-  exdates     String   @default("[]") // JSON array de ISO datetimes
+  exdates     String   @default("[]") // JSON array de ISO datetimes (texto, compatível com qualquer BD)
 }
 
 model StudyTask {
