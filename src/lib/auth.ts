@@ -8,21 +8,35 @@ import { redirect } from "next/navigation";
 import { prisma } from "./db";
 
 const isDev = process.env.NODE_ENV !== "production";
+/** Login só com email, sem verificação. Ativo em dev, ou em produção com ALLOW_EMAIL_ONLY_LOGIN=true. */
+export const emailOnlyLogin = isDev || process.env.ALLOW_EMAIL_ONLY_LOGIN === "true";
 
-const providers: NextAuthOptions["providers"] = [
-  EmailProvider({
-    server: process.env.EMAIL_SERVER ?? "",
-    from: process.env.EMAIL_FROM ?? "Estudo LEIC <no-reply@localhost>",
-    // Sem SMTP configurado (dev), o link de login aparece na consola do servidor.
-    ...(process.env.EMAIL_SERVER
-      ? {}
-      : {
-          async sendVerificationRequest({ identifier, url }) {
-            console.log(`\n🔑 Link de login para ${identifier}:\n${url}\n`);
-          },
-        }),
-  }),
-];
+const providers: NextAuthOptions["providers"] = [];
+
+if (emailOnlyLogin) {
+  providers.push(
+    CredentialsProvider({
+      id: "email-only",
+      name: "Email",
+      credentials: { email: { label: "Email", type: "email" } },
+      async authorize(creds) {
+        const email = creds?.email?.trim().toLowerCase();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+        return prisma.user.upsert({ where: { email }, create: { email }, update: {} });
+      },
+    }),
+  );
+}
+
+// Magic link por email: só quando há SMTP configurado
+if (process.env.EMAIL_SERVER) {
+  providers.push(
+    EmailProvider({
+      server: process.env.EMAIL_SERVER,
+      from: process.env.EMAIL_FROM ?? "Estudo LEIC <no-reply@localhost>",
+    }),
+  );
+}
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   providers.push(
@@ -30,25 +44,10 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   );
 }
 
-if (isDev) {
-  // Login rápido só em desenvolvimento: basta o email.
-  providers.push(
-    CredentialsProvider({
-      id: "dev",
-      name: "Dev (só email)",
-      credentials: { email: { label: "Email", type: "email" } },
-      async authorize(creds) {
-        const email = creds?.email?.trim().toLowerCase();
-        if (!email) return null;
-        return prisma.user.upsert({ where: { email }, create: { email }, update: {} });
-      },
-    }),
-  );
-}
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  pages: { signIn: "/login" },
   providers,
   callbacks: {
     jwt({ token, user }) {
@@ -71,7 +70,7 @@ export async function getUserId(): Promise<string | null> {
 export async function requireUser() {
   const id = await getUserId();
   const user = id ? await prisma.user.findUnique({ where: { id } }) : null;
-  if (!user) redirect("/api/auth/signin");
+  if (!user) redirect("/login");
   return user;
 }
 

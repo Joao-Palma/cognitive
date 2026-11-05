@@ -12,7 +12,7 @@ export default async function Home() {
         outros testes da semana para te dizer quando começar e o que estudar em cada dia.
       </p>
       <div className="mt-8 flex justify-center gap-3">
-        <Link href="/api/auth/signin" prefetch={false} className="btn px-5 py-3 text-base">Começar</Link>
+        <Link href="/login" className="btn px-5 py-3 text-base">Começar</Link>
         <Link href="/courses" className="btn-ghost px-5 py-3 text-base">Ver cadeiras</Link>
       </div>
       <ul className="mt-12 grid gap-4 text-left sm:grid-cols-3">
