@@ -4,12 +4,14 @@ import { M2, V2, add, sub, scale, dot, norm, unit, mulMV, mulMM, transpose, det2
 import { Plane, Arrow, Handle, Line, Seg, Path, Dot, COLORS } from "../ui/Plane";
 import { M } from "../ui/Tex";
 import { Lab, Presets, Slider } from "../ui/blocks";
+import { useLang, useT } from "@/i18n/client";
 import { MatrixSliders, Readout, TransformedGrid, texM2, texV2, n, poly } from "./common";
 
 const circle = (r = 1, N = 96): V2[] => Array.from({ length: N + 1 }, (_, i) => [r * Math.cos((2 * Math.PI * i) / N), r * Math.sin((2 * Math.PI * i) / N)] as V2);
 
 /** Produto interno, norma, ângulo e projeção ortogonal. */
 export function InnerProductLab() {
+  const t = useT();
   const [u, setU] = useState<V2>([3, 1]);
   const [v, setV] = useState<V2>([1, 2]);
   const uv = dot(u, v);
@@ -18,7 +20,7 @@ export function InnerProductLab() {
   const ang = (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
   const proj = nu > 1e-9 ? scale(uv / (nu * nu), u) : ([0, 0] as V2);
   return (
-    <Lab title="Produto interno e projeção" hint="Arrasta u e v. A projeção de v sobre u (verde) é a 'sombra' de v na direção de u; o resto (laranja) é ortogonal a u.">
+    <Lab title={t("Produto interno e projeção", "Inner product and projection")} hint={t("Arrasta u e v. A projeção de v sobre u (verde) é a 'sombra' de v na direção de u; o resto (laranja) é ortogonal a u.", "Drag u and v. The projection of v onto u (green) is v's 'shadow' along u; the remainder (orange) is orthogonal to u.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={4}>
           <Line d={u} color="#e2e8f0" />
@@ -30,13 +32,13 @@ export function InnerProductLab() {
           <Handle p={v} onChange={setV} color={COLORS.v} label="v" snap={0.25} />
         </Plane>
         <div className="space-y-3">
-          <Presets items={[{ label: "Ortogonais", value: [[2, 1], [-1, 2]] as [V2, V2] }, { label: "Colineares", value: [[2, 1], [-2, -1]] as [V2, V2] }, { label: "Agudo", value: [[3, 1], [1, 2]] as [V2, V2] }]} onPick={([a, b]) => { setU(a); setV(b); }} />
+          <Presets items={[{ label: t("Ortogonais", "Orthogonal"), value: [[2, 1], [-1, 2]] as [V2, V2] }, { label: t("Colineares", "Collinear"), value: [[2, 1], [-2, -1]] as [V2, V2] }, { label: t("Agudo", "Acute"), value: [[3, 1], [1, 2]] as [V2, V2] }]} onPick={([a, b]) => { setU(a); setV(b); }} />
           <Readout>
             <div><M>{`\\langle u, v\\rangle = ${n(u[0])}\\cdot${n(v[0])} + ${n(u[1])}\\cdot${n(v[1])} = ${n(uv)}`}</M></div>
             <div><M>{`\\|u\\| = ${n(nu)},\\ \\|v\\| = ${n(nv)}`}</M></div>
             <div><M>{`\\cos\\theta = \\frac{\\langle u,v\\rangle}{\\|u\\|\\|v\\|} = ${n(cos, 3)} \\Rightarrow \\theta \\approx ${n(ang, 1)}^\\circ`}</M></div>
             <div><M>{`\\operatorname{proj}_u v = \\frac{\\langle v,u\\rangle}{\\|u\\|^2}u = ${texV2(proj)}`}</M></div>
-            <div><M>{`|\\langle u,v\\rangle| = ${n(Math.abs(uv))} \\le \\|u\\|\\|v\\| = ${n(nu * nv)}`}</M> (Cauchy-Schwarz){Math.abs(Math.abs(uv) - nu * nv) < 1e-6 && " — igualdade: são colineares"}</div>
+            <div><M>{`|\\langle u,v\\rangle| = ${n(Math.abs(uv))} \\le \\|u\\|\\|v\\| = ${n(nu * nv)}`}</M> (Cauchy-Schwarz){Math.abs(Math.abs(uv) - nu * nv) < 1e-6 && t(" — igualdade: são colineares", " — equality: they are collinear")}</div>
             {Math.abs(uv) < 1e-9 && <b className="text-green-700">⟨u, v⟩ = 0: u ⊥ v</b>}
           </Readout>
         </div>
@@ -47,6 +49,7 @@ export function InnerProductLab() {
 
 /** Gram-Schmidt em R², passo a passo. */
 export function GramSchmidtLab() {
+  const t = useT();
   const [v1, setV1] = useState<V2>([3, 1]);
   const [v2, setV2] = useState<V2>([1, 2]);
   const [step, setStep] = useState(3);
@@ -55,7 +58,7 @@ export function GramSchmidtLab() {
   const w2 = sub(v2, p);
   const q1 = unit(w1), q2 = unit(w2);
   return (
-    <Lab title="Ortogonalização de Gram-Schmidt" hint="Avança passo a passo: w₁ = v₁; w₂ = v₂ − proj_{w₁} v₂; depois normaliza-se. A expansão linear nunca muda: 𝓛{w₁, w₂} = 𝓛{v₁, v₂}.">
+    <Lab title={t("Ortogonalização de Gram-Schmidt", "Gram-Schmidt orthogonalization")} hint={t("Avança passo a passo: w₁ = v₁; w₂ = v₂ − proj_{w₁} v₂; depois normaliza-se. A expansão linear nunca muda: 𝓛{w₁, w₂} = 𝓛{v₁, v₂}.", "Step through it: w₁ = v₁; w₂ = v₂ − proj_{w₁} v₂; then normalize. The span never changes: span{w₁, w₂} = span{v₁, v₂}.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={4}>
           <Arrow to={v1} color={step >= 1 ? "#cbd5e1" : COLORS.u} width={1.5} />
@@ -80,7 +83,7 @@ export function GramSchmidtLab() {
         </Plane>
         <div className="space-y-3">
           <div className="flex flex-wrap gap-1.5">
-            {["Vetores", "1. w₁ = v₁", "2. w₂ = v₂ − proj", "3. Normalizar"].map((l, i) => (
+            {[t("Vetores", "Vectors"), "1. w₁ = v₁", "2. w₂ = v₂ − proj", t("3. Normalizar", "3. Normalize")].map((l, i) => (
               <button key={l} onClick={() => setStep(i)} className={`rounded-full border px-2.5 py-1 text-xs ${step === i ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300"}`}>{l}</button>
             ))}
           </div>
@@ -89,11 +92,11 @@ export function GramSchmidtLab() {
             {step >= 2 && (
               <>
                 <div><M>{`w_2 = v_2 - \\frac{\\langle v_2, w_1\\rangle}{\\langle w_1, w_1\\rangle}w_1 = ${texV2(v2)} - \\frac{${n(dot(v2, w1))}}{${n(dot(w1, w1))}}${texV2(w1)} = ${texV2(w2)}`}</M></div>
-                <div>Verificação: <M>{`\\langle w_1, w_2\\rangle = ${n(dot(w1, w2), 6)}`}</M> ✔</div>
+                <div>{t("Verificação:", "Check:")} <M>{`\\langle w_1, w_2\\rangle = ${n(dot(w1, w2), 6)}`}</M> ✔</div>
               </>
             )}
             {step >= 3 && <div><M>{`q_1 = \\frac{w_1}{\\|w_1\\|} = ${texV2(q1, 3)},\\quad q_2 = \\frac{w_2}{\\|w_2\\|} = ${texV2(q2, 3)}`}</M></div>}
-            {norm(w2) < 1e-9 && <b className="text-red-700">w₂ = 0: v₁ e v₂ são linearmente dependentes.</b>}
+            {norm(w2) < 1e-9 && <b className="text-red-700">{t("w₂ = 0: v₁ e v₂ são linearmente dependentes.", "w₂ = 0: v₁ and v₂ are linearly dependent.")}</b>}
           </Readout>
         </div>
       </div>
@@ -103,6 +106,7 @@ export function GramSchmidtLab() {
 
 /** Mínimos quadrados: reta y = α + βx que minimiza a soma dos quadrados dos resíduos. */
 export function LeastSquaresLab() {
+  const t = useT();
   const [pts, setPts] = useState<V2[]>([[-3, -1.5], [-1, -1], [0, 0.5], [1, 1], [2.5, 1.5], [3.5, 3]]);
   const [manual, setManual] = useState(false);
   const [ma, setMa] = useState(0);
@@ -120,7 +124,7 @@ export function LeastSquaresLab() {
   const err = pts.reduce((s, p) => s + (p[1] - (a + b * p[0])) ** 2, 0);
   const best = fit ? pts.reduce((s, p) => s + (p[1] - (fit.a + fit.b * p[0])) ** 2, 0) : NaN;
   return (
-    <Lab title="Método dos mínimos quadrados" hint="Arrasta os pontos. A reta a roxo minimiza ‖b − Ax‖². Ativa 'ajustar à mão' e tenta bater o erro mínimo — não vais conseguir.">
+    <Lab title={t("Método dos mínimos quadrados", "Least squares method")} hint={t("Arrasta os pontos. A reta a roxo minimiza ‖b − Ax‖². Ativa 'ajustar à mão' e tenta bater o erro mínimo — não vais conseguir.", "Drag the points. The purple line minimizes ‖b − Ax‖². Turn on 'fit by hand' and try to beat the minimum error — you won't.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={4}>
           {pts.map((p, i) => <Seg key={`r${i}`} a={p} b={[p[0], a + b * p[0]]} color="#f97316" width={2} />)}
@@ -128,7 +132,7 @@ export function LeastSquaresLab() {
           {pts.map((p, i) => <Handle key={i} p={p} onChange={(q) => setPts(pts.map((x, j) => (j === i ? q : x)))} color="#0f172a" snap={0.25} />)}
         </Plane>
         <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={manual} onChange={(e) => { setManual(e.target.checked); if (fit) { setMa(Math.round(fit.a * 10) / 10); setMb(Math.round(fit.b * 10) / 10); } }} /> Ajustar a reta à mão</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={manual} onChange={(e) => { setManual(e.target.checked); if (fit) { setMa(Math.round(fit.a * 10) / 10); setMb(Math.round(fit.b * 10) / 10); } }} /> {t("Ajustar a reta à mão", "Fit the line by hand")}</label>
           {manual && (
             <>
               <Slider label={<M>{"\\alpha"}</M>} value={ma} min={-3} max={3} step={0.05} onChange={setMa} display={fmt(ma)} />
@@ -136,14 +140,14 @@ export function LeastSquaresLab() {
             </>
           )}
           <Readout>
-            <div>Sistema impossível <M>{"A\\begin{bmatrix}\\alpha\\\\\\beta\\end{bmatrix} = b"}</M>, com linhas <M>{"[1\\ \\ x_i]"}</M> e <M>{"b_i = y_i"}</M>.</div>
-            {fit && <div>Equações normais <M>{`A^TA\\hat x = A^Tb:\\ \\begin{bmatrix} ${fit.N} & ${n(fit.sx)} \\\\ ${n(fit.sx)} & ${n(fit.sxx)} \\end{bmatrix}\\begin{bmatrix}\\alpha\\\\\\beta\\end{bmatrix} = \\begin{bmatrix} ${n(fit.sy)} \\\\ ${n(fit.sxy)} \\end{bmatrix}`}</M></div>}
+            <div>{t("Sistema impossível", "Inconsistent system")} <M>{"A\\begin{bmatrix}\\alpha\\\\\\beta\\end{bmatrix} = b"}</M>, {t("com linhas", "with rows")} <M>{"[1\\ \\ x_i]"}</M> {t("e", "and")} <M>{"b_i = y_i"}</M>.</div>
+            {fit && <div>{t("Equações normais", "Normal equations")} <M>{`A^TA\\hat x = A^Tb:\\ \\begin{bmatrix} ${fit.N} & ${n(fit.sx)} \\\\ ${n(fit.sx)} & ${n(fit.sxx)} \\end{bmatrix}\\begin{bmatrix}\\alpha\\\\\\beta\\end{bmatrix} = \\begin{bmatrix} ${n(fit.sy)} \\\\ ${n(fit.sxy)} \\end{bmatrix}`}</M></div>}
             <div><M>{`y = ${n(a)} + ${n(b)}x`}</M></div>
-            <div>Erro <M>{`\\|b - A\\hat x\\|^2 = \\sum (y_i - \\alpha - \\beta x_i)^2 = ${n(err, 3)}`}</M>{manual && fit && <> (mínimo possível: {fmt(best, 3)})</>}</div>
+            <div>{t("Erro", "Error")} <M>{`\\|b - A\\hat x\\|^2 = \\sum (y_i - \\alpha - \\beta x_i)^2 = ${n(err, 3)}`}</M>{manual && fit && <> ({t("mínimo possível", "best possible")}: {fmt(best, 3)})</>}</div>
           </Readout>
           <div className="flex gap-2">
-            <button className="btn-ghost py-1" onClick={() => setPts([...pts, [Math.round((Math.random() * 6 - 3) * 4) / 4, Math.round((Math.random() * 6 - 3) * 4) / 4]])}>+ ponto</button>
-            <button className="btn-ghost py-1" disabled={pts.length <= 2} onClick={() => setPts(pts.slice(0, -1))}>− ponto</button>
+            <button className="btn-ghost py-1" onClick={() => setPts([...pts, [Math.round((Math.random() * 6 - 3) * 4) / 4, Math.round((Math.random() * 6 - 3) * 4) / 4]])}>+ {t("ponto", "point")}</button>
+            <button className="btn-ghost py-1" disabled={pts.length <= 2} onClick={() => setPts(pts.slice(0, -1))}>− {t("ponto", "point")}</button>
           </div>
         </div>
       </div>
@@ -153,6 +157,7 @@ export function LeastSquaresLab() {
 
 /** Teorema espetral: matriz simétrica = rotação · esticar nos eixos próprios · rotação de volta. */
 export function SpectralLab() {
+  const t = useT();
   const [a, setA] = useState(2);
   const [b, setB] = useState(1);
   const [c, setC] = useState(1);
@@ -161,7 +166,7 @@ export function SpectralLab() {
   const q1: V2 = [Q[0][0], Q[1][0]], q2: V2 = [Q[0][1], Q[1][1]];
   const ellipse = circle(1).map((p) => mulMV(A, p));
   return (
-    <Lab title="Teorema espetral" hint="Para A simétrica, os vetores próprios são ortogonais. O círculo unitário é transformado numa elipse cujos eixos são os vetores próprios, esticados por |λ|.">
+    <Lab title={t("Teorema espetral", "Spectral theorem")} hint={t("Para A simétrica, os vetores próprios são ortogonais. O círculo unitário é transformado numa elipse cujos eixos são os vetores próprios, esticados por |λ|.", "For symmetric A the eigenvectors are orthogonal. The unit circle becomes an ellipse whose axes are the eigenvectors, stretched by |λ|.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={4}>
           <Path pts={circle(1)} stroke="#cbd5e1" />
@@ -177,9 +182,9 @@ export function SpectralLab() {
           <Slider label={<M>c</M>} value={c} min={-3} max={3} step={0.1} onChange={setC} display={fmt(c, 1)} />
           <Readout>
             <div><M>{`A = \\begin{bmatrix} a & b \\\\ b & c\\end{bmatrix} = ${texM2(A, 1)} = A^T`}</M></div>
-            <div><M>{`\\lambda_1 = ${n(values[0])},\\ \\lambda_2 = ${n(values[1])}`}</M> — sempre reais</div>
+            <div><M>{`\\lambda_1 = ${n(values[0])},\\ \\lambda_2 = ${n(values[1])}`}</M> — {t("sempre reais", "always real")}</div>
             <div><M>{`A = QDQ^T,\\ Q = ${texM2(Q)},\\ D = ${texM2([[values[0], 0], [0, values[1]]] as M2)}`}</M></div>
-            <div><M>{`\\langle q_1, q_2\\rangle = ${n(dot(q1, q2), 6)}`}</M> e <M>{`Q^TQ = I`}</M> (Q ortogonal)</div>
+            <div><M>{`\\langle q_1, q_2\\rangle = ${n(dot(q1, q2), 6)}`}</M> {t("e", "and")} <M>{`Q^TQ = I`}</M> {t("(Q ortogonal)", "(Q orthogonal)")}</div>
           </Readout>
         </div>
       </div>
@@ -189,19 +194,20 @@ export function SpectralLab() {
 
 /** Transformações ortogonais: rotações e reflexões preservam comprimentos e ângulos. */
 export function OrthogonalLab() {
+  const t = useT();
   const [theta, setTheta] = useState(30);
   const [reflect, setReflect] = useState(false);
   const [u, setU] = useState<V2>([2, 1]);
   const [v, setV] = useState<V2>([0.5, 2]);
-  const t = (theta * Math.PI) / 180;
-  const Qm: M2 = reflect ? [[Math.cos(2 * t), Math.sin(2 * t)], [Math.sin(2 * t), -Math.cos(2 * t)]] : rot(t);
+  const th = (theta * Math.PI) / 180;
+  const Qm: M2 = reflect ? [[Math.cos(2 * th), Math.sin(2 * th)], [Math.sin(2 * th), -Math.cos(2 * th)]] : rot(th);
   const Qu = mulMV(Qm, u), Qv = mulMV(Qm, v);
   const QtQ = mulMM(transpose(Qm), Qm);
   return (
-    <Lab title="Transformações ortogonais" hint="Rotação de ângulo θ ou reflexão na reta de ângulo θ. Repara: ‖Qu‖ = ‖u‖ e ⟨Qu, Qv⟩ = ⟨u, v⟩ — a forma não se deforma.">
+    <Lab title={t("Transformações ortogonais", "Orthogonal transformations")} hint={t("Rotação de ângulo θ ou reflexão na reta de ângulo θ. Repara: ‖Qu‖ = ‖u‖ e ⟨Qu, Qv⟩ = ⟨u, v⟩ — a forma não se deforma.", "Rotation by angle θ or reflection in the line at angle θ. Notice: ‖Qu‖ = ‖u‖ and ⟨Qu, Qv⟩ = ⟨u, v⟩ — shapes are not distorted.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={3}>
-          {reflect && <Line d={[Math.cos(t), Math.sin(t)]} color="#f59e0b" dashed width={2} />}
+          {reflect && <Line d={[Math.cos(th), Math.sin(th)]} color="#f59e0b" dashed width={2} />}
           <Arrow to={u} color="#93c5fd" />
           <Arrow to={v} color="#fca5a5" />
           <Arrow to={Qu} color={COLORS.u} label="Qu" width={3} />
@@ -211,10 +217,10 @@ export function OrthogonalLab() {
         </Plane>
         <div className="space-y-3">
           <Slider label={<M>{"\\theta"}</M>} value={theta} min={-180} max={180} step={1} onChange={setTheta} display={`${theta}°`} />
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={reflect} onChange={(e) => setReflect(e.target.checked)} /> Reflexão (em vez de rotação)</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={reflect} onChange={(e) => setReflect(e.target.checked)} /> {t("Reflexão (em vez de rotação)", "Reflection (instead of rotation)")}</label>
           <Readout>
             <div><M>{`Q = ${texM2(Qm, 3)}`}</M></div>
-            <div><M>{`Q^TQ = ${texM2(QtQ, 3)} = I`}</M> ✔ &nbsp; <M>{`\\det Q = ${n(det2(Qm), 3)}`}</M> ({reflect ? "reflexão" : "rotação"})</div>
+            <div><M>{`Q^TQ = ${texM2(QtQ, 3)} = I`}</M> ✔ &nbsp; <M>{`\\det Q = ${n(det2(Qm), 3)}`}</M> ({reflect ? t("reflexão", "reflection") : t("rotação", "rotation")})</div>
             <div><M>{`\\|u\\| = ${n(norm(u))},\\ \\|Qu\\| = ${n(norm(Qu))}`}</M></div>
             <div><M>{`\\langle u,v\\rangle = ${n(dot(u, v))},\\ \\langle Qu,Qv\\rangle = ${n(dot(Qu, Qv))}`}</M></div>
           </Readout>
@@ -226,6 +232,8 @@ export function OrthogonalLab() {
 
 /** SVD: A = U Σ Vᵀ = rodar · esticar · rodar. */
 export function SVDLab() {
+  const t = useT();
+  const lang = useLang();
   const [A, setA] = useState<M2>([[3, 0], [4, 5]]);
   const [stage, setStage] = useState(3);
   const { U, S, V } = svd2(A);
@@ -236,7 +244,7 @@ export function SVDLab() {
   const v1: V2 = [V[0][0], V[1][0]], v2: V2 = [V[0][1], V[1][1]];
   const scaleR = Math.max(4, Math.ceil(S[0] + 0.5));
   return (
-    <Lab title="Decomposição em valores singulares" hint="Qualquer matriz leva o círculo unitário numa elipse. Vê a decomposição por etapas: Vᵀ roda, Σ estica ao longo dos eixos, U volta a rodar.">
+    <Lab title={t("Decomposição em valores singulares", "Singular value decomposition")} hint={t("Qualquer matriz leva o círculo unitário numa elipse. Vê a decomposição por etapas: Vᵀ roda, Σ estica ao longo dos eixos, U volta a rodar.", "Every matrix maps the unit circle to an ellipse. See the decomposition in stages: Vᵀ rotates, Σ stretches along the axes, U rotates again.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={scaleR}>
           <TransformedGrid A={T} color="#e0e7ff" range={scaleR} />
@@ -248,15 +256,15 @@ export function SVDLab() {
         <div className="space-y-3">
           <MatrixSliders A={A} onChange={setA} step={0.5} min={-5} max={5} />
           <div className="flex flex-wrap gap-1.5">
-            {["Círculo", "Vᵀ (rodar)", "ΣVᵀ (esticar)", "UΣVᵀ = A"].map((l, i) => (
+            {[t("Círculo", "Circle"), t("Vᵀ (rodar)", "Vᵀ (rotate)"), t("ΣVᵀ (esticar)", "ΣVᵀ (stretch)"), "UΣVᵀ = A"].map((l, i) => (
               <button key={l} onClick={() => setStage(i)} className={`rounded-full border px-2.5 py-1 text-xs ${stage === i ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300"}`}>{l}</button>
             ))}
           </div>
           <Readout>
             <div><M>{`A = ${texM2(A, 1)} = U\\Sigma V^T`}</M></div>
-            <div><M>{`\\sigma_1 = ${n(S[0], 3)},\\ \\sigma_2 = ${n(S[1], 3)}`}</M> — raízes dos valores próprios de <M>{"A^TA"}</M> (semieixos da elipse)</div>
+            <div><M>{`\\sigma_1 = ${n(S[0], 3)},\\ \\sigma_2 = ${n(S[1], 3)}`}</M> — {t("raízes dos valores próprios de", "square roots of the eigenvalues of")} <M>{"A^TA"}</M> {t("(semieixos da elipse)", "(the ellipse's semi-axes)")}</div>
             <div><M>{`V = ${texM2(V, 3)},\\ U = ${texM2(U, 3)}`}</M></div>
-            <div className="text-slate-600"><M>{`|\\det A| = ${n(Math.abs(det2(A)), 3)} = \\sigma_1\\sigma_2 = ${n(S[0] * S[1], 3)}`}</M>; car(A) = nº de σ não nulos = {S.filter((s) => s > 1e-9).length}</div>
+            <div className="text-slate-600"><M>{`|\\det A| = ${n(Math.abs(det2(A)), 3)} = \\sigma_1\\sigma_2 = ${n(S[0] * S[1], 3)}`}</M>; {lang === "en" ? "rank(A) = number of non-zero σ" : "car(A) = nº de σ não nulos"} = {S.filter((s) => s > 1e-9).length}</div>
           </Readout>
         </div>
       </div>
@@ -266,13 +274,14 @@ export function SVDLab() {
 
 /** Formas quadráticas Q(x,y) = ax² + 2bxy + cy²: curvas de nível e classificação. */
 export function QuadraticFormLab() {
+  const t = useT();
   const [a, setA] = useState(2);
   const [b, setB] = useState(1);
   const [c, setC] = useState(1);
   const { values, Q } = symEigen(a, b, c);
   const [l1, l2] = values;
   const cls =
-    l1 > 1e-9 && l2 > 1e-9 ? "definida positiva" : l1 < -1e-9 && l2 < -1e-9 ? "definida negativa" : l1 > 1e-9 && l2 < -1e-9 ? "indefinida" : l1 >= -1e-9 && l2 >= -1e-9 ? "semidefinida positiva" : "semidefinida negativa";
+    l1 > 1e-9 && l2 > 1e-9 ? t("definida positiva", "positive definite") : l1 < -1e-9 && l2 < -1e-9 ? t("definida negativa", "negative definite") : l1 > 1e-9 && l2 < -1e-9 ? t("indefinida", "indefinite") : l1 >= -1e-9 && l2 >= -1e-9 ? t("semidefinida positiva", "positive semidefinite") : t("semidefinida negativa", "negative semidefinite");
   // heatmap por amostragem
   const N = 40, R = 3;
   const cells = [];
@@ -307,7 +316,7 @@ export function QuadraticFormLab() {
     return out;
   };
   return (
-    <Lab title="Classificação de formas quadráticas" hint="Azul: Q > 0, vermelho: Q < 0. As curvas Q = ±1 e Q = ±4 são elipses (definida) ou hipérboles (indefinida), com eixos nos vetores próprios.">
+    <Lab title={t("Classificação de formas quadráticas", "Classifying quadratic forms")} hint={t("Azul: Q > 0, vermelho: Q < 0. As curvas Q = ±1 e Q = ±4 são elipses (definida) ou hipérboles (indefinida), com eixos nos vetores próprios.", "Blue: Q > 0, red: Q < 0. The curves Q = ±1 and Q = ±4 are ellipses (definite) or hyperbolas (indefinite), with axes along the eigenvectors.")}>
       <div className="grid gap-4 md:grid-cols-2">
         <Plane range={R}>
           {cells}
@@ -322,18 +331,18 @@ export function QuadraticFormLab() {
           <Slider label={<M>c</M>} value={c} min={-3} max={3} step={0.1} onChange={setC} display={fmt(c, 1)} />
           <Presets
             items={[
-              { label: "Def. positiva", value: [2, 1, 1] },
-              { label: "Def. negativa", value: [-1, 0.5, -2] },
-              { label: "Indefinida", value: [1, 0, -1] },
-              { label: "Semidefinida", value: [1, 1, 1] },
+              { label: t("Def. positiva", "Pos. definite"), value: [2, 1, 1] },
+              { label: t("Def. negativa", "Neg. definite"), value: [-1, 0.5, -2] },
+              { label: t("Indefinida", "Indefinite"), value: [1, 0, -1] },
+              { label: t("Semidefinida", "Semidefinite"), value: [1, 1, 1] },
             ]}
             onPick={([x, y, z]) => { setA(x); setB(y); setC(z); }}
           />
           <Readout>
             <div><M>{`Q(x,y) = ${poly([[a, "x^2"], [2 * b, "xy"], [c, "y^2"]], 1)} = \\begin{bmatrix}x & y\\end{bmatrix}${texM2([[a, b], [b, c]] as M2, 1)}\\begin{bmatrix}x\\\\y\\end{bmatrix}`}</M></div>
             <div><M>{`\\lambda_1 = ${n(l1)},\\ \\lambda_2 = ${n(l2)}`}</M> → <b>{cls}</b></div>
-            <div className="text-slate-600">Critério dos menores: <M>{`a = ${n(a, 1)},\\ \\det = ac - b^2 = ${n(a * c - b * b)}`}</M>{a * c - b * b > 1e-9 ? (a > 0 ? " → ambos > 0: definida positiva" : " → a < 0 e det > 0: definida negativa") : a * c - b * b < -1e-9 ? " → det < 0: indefinida" : " → det = 0: semidefinida (ou nula)"}</div>
-            <div className="text-slate-600">Nos eixos próprios: <M>{`Q = ${poly([[l1, "s^2"], [l2, "t^2"]])}`}</M> (sem termo cruzado)</div>
+            <div className="text-slate-600">{t("Critério dos menores:", "Leading minors test:")} <M>{`a = ${n(a, 1)},\\ \\det = ac - b^2 = ${n(a * c - b * b)}`}</M>{a * c - b * b > 1e-9 ? (a > 0 ? t(" → ambos > 0: definida positiva", " → both > 0: positive definite") : t(" → a < 0 e det > 0: definida negativa", " → a < 0 and det > 0: negative definite")) : a * c - b * b < -1e-9 ? t(" → det < 0: indefinida", " → det < 0: indefinite") : t(" → det = 0: semidefinida (ou nula)", " → det = 0: semidefinite (or zero)")}</div>
+            <div className="text-slate-600">{t("Nos eixos próprios:", "In the eigen-axes:")} <M>{`Q = ${poly([[l1, "s^2"], [l2, "t^2"]])}`}</M> {t("(sem termo cruzado)", "(no cross term)")}</div>
           </Readout>
         </div>
       </div>

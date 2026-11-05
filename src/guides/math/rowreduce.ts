@@ -12,6 +12,7 @@ export interface Step {
   op: RowOp;
   matrix: FMatrix;
   note?: string;
+  noteEn?: string;
 }
 
 export const clone = (m: FMatrix): FMatrix => m.map((r) => [...r]);
@@ -74,9 +75,15 @@ export function rowReduce(m0: FMatrix, opts: { pivotCols?: number; reduced?: boo
   const steps: Step[] = [];
   let m = clone(m0);
   const rows = m.length;
+  const NOTES_EN: Record<string, string> = {
+    "trocar linhas para ter pivô": "swap rows to get a pivot",
+    "anular abaixo do pivô": "clear below the pivot",
+    "pôr o pivô a 1": "make the pivot 1",
+    "anular acima do pivô": "clear above the pivot",
+  };
   const push = (op: RowOp, note?: string) => {
     m = applyOp(m, op);
-    steps.push({ op, matrix: m, note });
+    steps.push({ op, matrix: m, note, noteEn: note ? NOTES_EN[note] : undefined });
   };
 
   let r = 0;
@@ -124,6 +131,11 @@ export const CLASS_LABEL: Record<SystemClass, string> = {
   SI: "Sistema impossível",
   SPD: "Sistema possível e determinado",
   SPI: "Sistema possível e indeterminado",
+};
+export const CLASS_LABEL_EN: Record<SystemClass, string> = {
+  SI: "Inconsistent system",
+  SPD: "Consistent system with a unique solution",
+  SPI: "Consistent system with infinitely many solutions",
 };
 
 /** Determinante exato por eliminação. */

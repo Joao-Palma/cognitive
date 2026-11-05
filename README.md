@@ -36,6 +36,14 @@ Para entrar, basta o email em `/login`, sem verificação. Fica ativo em dev, e 
 
 Código: `src/lib/{planner,availability,events,scheduler,replan}.ts`.
 
+## Idiomas (PT / EN)
+
+A app está em português e inglês, com um botão **PT | EN** no topo. A escolha fica guardada no cookie `lang`. Sem cookie, a app segue a língua do browser.
+
+- Os textos estão escritos aos pares: `t("pt", "en")`. No servidor vem de `getT()` (`src/i18n/server.ts`) e nos componentes cliente de `useT()` (`src/i18n/client.tsx`).
+- Os nomes das cadeiras em inglês vêm do Fénix (`lang=en-GB`). Os programas só existem em português, por isso os títulos dos tópicos em inglês (`Topic.titleEn`) são traduzidos à mão; por agora só os de Álgebra Linear.
+- Os guias em inglês estão em `src/guides/al-en/`.
+
 ## Guias de estudo interativos
 
 Para **Álgebra Linear** há 21 guias, um por tópico do programa. Estão em `src/guides/al/` e cada um tem resumo, definições e teoremas, um laboratório interativo, exemplo resolvido, exercícios com solução e erros comuns. Há 18 laboratórios, entre eles:

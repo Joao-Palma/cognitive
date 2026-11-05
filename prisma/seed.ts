@@ -17,10 +17,11 @@ interface SeedCourse {
   fenixId: string;
   acronym: string;
   name: string;
+  nameEn?: string;
   ects: number;
   semester: number | null;
   programRaw: string | null;
-  topics: { order: number; title: string; weight: number; difficulty: number }[];
+  topics: { order: number; title: string; titleEn?: string; weight: number; difficulty: number }[];
 }
 
 const prisma = new PrismaClient();
@@ -33,14 +34,14 @@ async function seedCourse(c: SeedCourse) {
 
   const course = await prisma.course.upsert({
     where: { fenixId: c.fenixId },
-    create: { fenixId: c.fenixId, acronym: c.acronym, name: c.name, ects: c.ects, semester: c.semester, programRaw: c.programRaw },
-    update: { acronym: c.acronym, name: c.name, ects: c.ects, semester: c.semester, programRaw: c.programRaw },
+    create: { fenixId: c.fenixId, acronym: c.acronym, name: c.name, nameEn: c.nameEn, ects: c.ects, semester: c.semester, programRaw: c.programRaw },
+    update: { acronym: c.acronym, name: c.name, nameEn: c.nameEn, ects: c.ects, semester: c.semester, programRaw: c.programRaw },
   });
   for (const t of c.topics) {
     await prisma.topic.upsert({
       where: { courseId_order: { courseId: course.id, order: t.order } },
-      create: { courseId: course.id, order: t.order, title: t.title, weight: t.weight, difficulty: t.difficulty },
-      update: { title: t.title },
+      create: { courseId: course.id, order: t.order, title: t.title, titleEn: t.titleEn, weight: t.weight, difficulty: t.difficulty },
+      update: { title: t.title, titleEn: t.titleEn },
     });
   }
   const guides = GUIDE_INDEX[c.acronym]?.length ?? 0;

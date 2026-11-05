@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/i18n/client";
 
 export interface CourseOption {
   id: string;
@@ -12,6 +13,7 @@ export interface CourseOption {
 
 export function ExamForm({ courses, timezone }: { courses: CourseOption[]; timezone: string }) {
   const router = useRouter();
+  const t = useT();
   const [courseId, setCourseId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("09:00");
@@ -24,7 +26,7 @@ export function ExamForm({ courses, timezone }: { courses: CourseOption[]; timez
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!course || !date || !lastTopic) return setError("Preenche a cadeira, a data e até que matéria sai.");
+    if (!course || !date || !lastTopic) return setError(t("Preenche a cadeira, a data e até que matéria sai.", "Fill in the course, the date and up to which topic the exam covers."));
     setBusy(true);
     const res = await fetch("/api/exams", {
       method: "POST",
@@ -33,8 +35,8 @@ export function ExamForm({ courses, timezone }: { courses: CourseOption[]; timez
     });
     const data = await res.json();
     setBusy(false);
-    if (!res.ok) return setError(data.error ?? "Erro ao criar o exame");
-    const msg = data.summary?.message ?? `Plano de ${course.acronym} criado.`;
+    if (!res.ok) return setError(data.error ?? t("Erro ao criar o exame", "Could not create the exam"));
+    const msg = data.summary?.message ?? t(`Plano de ${course.acronym} criado.`, `${course.acronym} plan created.`);
     router.push(`/plan?msg=${encodeURIComponent(msg)}`);
     router.refresh();
   }
@@ -44,11 +46,11 @@ export function ExamForm({ courses, timezone }: { courses: CourseOption[]; timez
   return (
     <form onSubmit={submit} className="card space-y-4">
       <div>
-        <label className="label" htmlFor="course">Cadeira</label>
+        <label className="label" htmlFor="course">{t("Cadeira", "Course")}</label>
         <select id="course" className="input" value={courseId} onChange={(e) => { setCourseId(e.target.value); setLastTopic(0); }}>
-          <option value="">Escolhe…</option>
+          <option value="">{t("Escolhe…", "Choose…")}</option>
           {bySemester.map(({ s, list }) => (
-            <optgroup key={s} label={`${s}.º semestre`}>
+            <optgroup key={s} label={t(`${s}.º semestre`, `Semester ${s}`)}>
               {list.map((c) => (
                 <option key={c.id} value={c.id}>{c.acronym} — {c.name}</option>
               ))}
@@ -58,23 +60,23 @@ export function ExamForm({ courses, timezone }: { courses: CourseOption[]; timez
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
-          <label className="label" htmlFor="date">Data</label>
+          <label className="label" htmlFor="date">{t("Data", "Date")}</label>
           <input id="date" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
         <div>
-          <label className="label" htmlFor="time">Hora</label>
+          <label className="label" htmlFor="time">{t("Hora", "Time")}</label>
           <input id="time" type="time" className="input" value={time} onChange={(e) => setTime(e.target.value)} />
         </div>
         <div>
-          <label className="label" htmlFor="dur">Duração (min)</label>
+          <label className="label" htmlFor="dur">{t("Duração (min)", "Duration (min)")}</label>
           <input id="dur" type="number" min={15} max={600} step={15} className="input" value={duration} onChange={(e) => setDuration(Number(e.target.value))} />
         </div>
       </div>
       {course && (
         <div>
-          <span className="label">Até que matéria sai?</span>
+          <span className="label">{t("Até que matéria sai?", "Up to which topic does it cover?")}</span>
           {course.topics.length === 0 ? (
-            <p className="text-sm text-slate-500">Esta cadeira não tem tópicos importados.</p>
+            <p className="text-sm text-slate-500">{t("Esta cadeira não tem tópicos importados.", "This course has no imported topics.")}</p>
           ) : (
             <ol className="max-h-80 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">
               {course.topics.map((t) => (
@@ -87,11 +89,11 @@ export function ExamForm({ courses, timezone }: { courses: CourseOption[]; timez
               ))}
             </ol>
           )}
-          {lastTopic > 0 && <p className="mt-1 text-xs text-slate-500">Saem os tópicos 1 a {lastTopic}.</p>}
+          {lastTopic > 0 && <p className="mt-1 text-xs text-slate-500">{t(`Saem os tópicos 1 a ${lastTopic}.`, `Topics 1 to ${lastTopic} are covered.`)}</p>}
         </div>
       )}
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <button className="btn" disabled={busy}>{busy ? "A planear…" : "Criar exame e planear"}</button>
+      <button className="btn" disabled={busy}>{busy ? t("A planear…", "Planning…") : t("Criar exame e planear", "Create exam and plan")}</button>
     </form>
   );
 }
