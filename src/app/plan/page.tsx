@@ -8,6 +8,7 @@ import { formatDay, formatDateTime, hours, STATUS_LABEL } from "@/lib/format";
 import { TaskCheckbox } from "@/components/TaskCheckbox";
 import { Flash } from "@/components/Flash";
 import { isPremium } from "@/lib/premium";
+import { hasGuide } from "@/guides";
 
 export const dynamic = "force-dynamic";
 
@@ -138,7 +139,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
                     <span className="shrink-0 text-sm text-slate-500">{hours(t.hours)}</span>
                     {t.topic && (
                       <Link href={`/guides/${t.topic.id}`} className="shrink-0 text-xs text-blue-700 hover:underline">
-                        {isPremium(user) ? "Guia" : "Guia ✨"}
+                        {hasGuide(t.exam.course.acronym, t.topic.order) ? "Guia interativo" : "Guia"}{isPremium(user) ? "" : " ✨"}
                       </Link>
                     )}
                   </li>

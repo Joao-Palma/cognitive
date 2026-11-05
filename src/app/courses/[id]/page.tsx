@@ -5,6 +5,7 @@ import { getUserId, isAdmin } from "@/lib/auth";
 import { courseStudyHours, estimateTopicHours } from "@/lib/planner";
 import { hours } from "@/lib/format";
 import { TopicWeightEditor } from "@/components/TopicWeightEditor";
+import { hasGuide } from "@/guides";
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,6 +30,9 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <li key={t.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
               <span className="w-6 text-slate-400">{t.order}.</span>
               <span className="min-w-0 flex-1">{t.title}</span>
+              {hasGuide(course.acronym, t.order) && (
+                <Link href={`/guides/${t.id}`} className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-100">Guia interativo</Link>
+              )}
               <span className="text-slate-500">{hours(Math.round((est.get(t.id) ?? 0) * 10) / 10)}</span>
               {admin && <TopicWeightEditor id={t.id} weight={t.weight} difficulty={t.difficulty} />}
             </li>

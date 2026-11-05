@@ -20,6 +20,11 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    // Guias de estudo: texto em português com aspas tipográficas normais
+    files: ["src/guides/**/*.tsx"],
+    rules: { "react/no-unescaped-entities": "off" },
+  },
 ];
 
 export default eslintConfig;

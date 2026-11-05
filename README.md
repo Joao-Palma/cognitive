@@ -34,6 +34,19 @@ Para entrar, basta o email em `/login`, sem verificação. Fica ativo em dev, e 
 
 Código: `src/lib/{planner,availability,events,scheduler,replan}.ts`.
 
+## Guias de estudo interativos
+
+Para **Álgebra Linear** há 21 guias, um por tópico do programa. Estão em `src/guides/al/` e cada um tem resumo, definições e teoremas, um laboratório interativo, exemplo resolvido, exercícios com solução e erros comuns. Há 18 laboratórios, entre eles:
+
+- eliminação de Gauss passo a passo e transformações do plano;
+- vetores próprios, cadeias de Markov e PageRank;
+- Gram-Schmidt, mínimos quadrados e SVD;
+- formas quadráticas.
+
+O código está em `src/guides/widgets/`. A aritmética exata (frações) e a álgebra 2×2 estão em `src/guides/math/` e têm testes. A notação segue a usada no IST e nos [resumos da LEIC](https://resumos.leic.pt); o texto e os exemplos são originais.
+
+Para acrescentar uma cadeira: escreve os componentes em `src/guides/<sigla>/`, regista-os em `src/guides/GuideRenderer.tsx` e adiciona as ordens dos tópicos a `src/guides/index.ts`.
+
 ## Premium
 
-`User.isPremium` controla o acesso aos guias por tópico (`/guides/[topicId]`). Os pagamentos (Stripe) ficam para a fase 2.
+`User.isPremium` controla o acesso aos guias por tópico (`/guides/[topicId]`). O 1.º guia de cada cadeira é amostra grátis. Em dev, o premium ativa-se em **Definições**. Os pagamentos (Stripe) ficam para a fase 2.
