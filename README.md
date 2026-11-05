@@ -9,7 +9,7 @@ estudar em cada dia**. Vários testes na mesma semana são conciliados num únic
 ```bash
 npm install
 cp .env.example .env
-npm run db:setup           # cria a BD SQLite e insere Álgebra Linear (tópicos + guias), sem rede
+npm run db:setup           # arranca o Postgres (Docker), aplica migrações e insere Álgebra Linear
 npm run scrape             # opcional: importa as restantes cadeiras da LEIC-A/T (API do Fénix)
 npm run dev                # http://localhost:3100
 ```
@@ -21,7 +21,7 @@ Para entrar, basta o email em `/login`, sem verificação. Fica ativo em dev, e 
 | Comando | O quê |
 |---|---|
 | `npm test` | Testes do núcleo (planner, recorrências, disponibilidade, scheduler, parser) |
-| `npm run db:setup` | Aplica as migrações e corre o seed (Álgebra Linear) |
+| `npm run db:setup` | `docker compose up -d`, migrações e seed (Álgebra Linear) |
 | `npm run db:seed` | Só o seed. Também corre sozinho em `prisma migrate dev` (BD nova) e `prisma migrate reset` |
 | `npm run scrape` | Importa/atualiza cadeiras do Fénix (`-- --fresh` ignora a cache) |
 | `npm run db:studio` | Inspecionar a BD |
@@ -59,3 +59,14 @@ O seed falha se houver um guia para um tópico que não exista.
 ## Premium
 
 `User.isPremium` controla o acesso aos guias por tópico (`/guides/[topicId]`). O 1.º guia de cada cadeira é amostra grátis. Em dev, o premium ativa-se em **Definições**. Os pagamentos (Stripe) ficam para a fase 2.
+
+## Deploy (Vercel + Neon)
+
+1. Na Vercel: **Add New → Project** e importa o repositório do GitHub. A partir daí, cada push para `main` faz deploy.
+2. Em **Storage → Create Database → Neon**, liga a base de dados ao projeto. Ficam definidas as variáveis `DATABASE_URL` e `DATABASE_URL_UNPOOLED`.
+3. Em **Settings → Environment Variables**:
+   - `NEXTAUTH_SECRET` (gera com `openssl rand -base64 32`);
+   - `ALLOW_EMAIL_ONLY_LOGIN=true`, para o login demo só com email. Atenção: sem verificação, qualquer pessoa entra com qualquer email.
+4. O build (`npm run vercel-build`) aplica as migrações, corre o seed e faz `next build`.
+
+Para importar as restantes cadeiras para produção, corre `DATABASE_URL=<url do Neon> DATABASE_URL_UNPOOLED=<url direta> npm run scrape` a partir da tua máquina.
